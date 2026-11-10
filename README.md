@@ -171,10 +171,10 @@ py scripts/make_slides.py --tag hf_main   # 换成 BERT 主实验的数字出图
 
 ## 免 Python 演示包
 
-`dist/er-triage-demo/er-triage-demo.exe` 已把模型、依赖和界面打进同一个文件夹，
-拷到另一台 Windows 10/11 x64 机器上双击即可运行，不需要装 Python：
+打包脚本会把模型、依赖和界面收进同一个文件夹，拷到另一台 Windows 10/11 x64 机器上
+双击即可运行，不需要装 Python（300 MB 的 zip 不进仓库，按下面命令本地生成）：
 
-- 双击 → 启动后自动打开浏览器（默认 http://127.0.0.1:8091）
+- 双击 `er-triage-demo.exe` → 启动后自动打开浏览器（默认 http://127.0.0.1:8091）
 - 指定端口：`er-triage-demo.exe --port 8092`（带参数启动时不会自动开浏览器）
 - 必须整个 `er-triage-demo` 文件夹一起拷贝，exe 不能单独拎出来
 
