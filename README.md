@@ -176,6 +176,7 @@ py scripts/make_slides.py --tag hf_main   # 换成 BERT 主实验的数字出图
 
 - 双击 `er-triage-demo.exe` → 启动后自动打开浏览器（默认 http://127.0.0.1:8091）
 - 指定端口：`er-triage-demo.exe --port 8092`（带参数启动时不会自动开浏览器）
+- 端口被占用时自动向后顺延（8091 → 8092 → …），控制台会打印实际地址
 - 必须整个 `er-triage-demo` 文件夹一起拷贝，exe 不能单独拎出来
 
 重新打包：
