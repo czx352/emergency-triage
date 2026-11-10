@@ -133,17 +133,21 @@ body, .gradio-container {background:#f4f6f9 !important;}
 .gradio-container h1, .gradio-container h2, .gradio-container h3,
 .gradio-container .prose p, .gradio-container label span {color:#1b2631 !important;}
 
-.triage-card {border:1px solid #e3e6ea; border-radius:12px; padding:18px 20px; background:#fff;}
+.triage-card {border:1px solid #dfe4ea; border-radius:12px; padding:18px 20px;
+              background:#fff !important;}
 .triage-card .badge {display:inline-block; color:#fff !important; font-size:26px; font-weight:700;
         padding:10px 18px; border-radius:10px; margin-right:14px; vertical-align:middle;}
 .triage-card .meta {display:inline-block; vertical-align:middle;}
-.triage-card .label {font-size:19px; font-weight:600; color:#1b2631 !important;}
-.triage-card .sub {font-size:13px; color:#6b7683 !important; margin-top:4px;}
-.triage-card .suggest {margin-top:16px; font-size:15px; color:#212f3d !important; line-height:1.6;}
+.triage-card .label {font-size:21px; font-weight:700; color:#12232e !important;}
+.triage-card .sub {font-size:14px; color:#465563 !important; margin-top:5px;}
+.triage-card .suggest {margin-top:16px; font-size:16px; color:#1b2a36 !important; line-height:1.6;}
 .triage-card .warn {margin-top:12px; padding:10px 12px; border-radius:8px;
-       background:#fdf2e9; color:#a04000 !important; font-size:14px; border-left:4px solid #d35400;}
-.triage-card .ver {margin-top:14px; font-size:12px; color:#98a2ad !important;}
+       background:#fdf2e9; color:#8a3500 !important; font-size:14px; border-left:4px solid #d35400;}
+.triage-card .ver {margin-top:14px; font-size:12.5px; color:#7b8794 !important;}
 .note {font-size:12px; color:#7f8c8d !important; line-height:1.7;}
+
+/* 选中文字时默认是深蓝底 + 深色字，几乎看不清，这里换成浅蓝底 + 近黑字 */
+::selection {background:#cfe0f7; color:#12232e;}
 """
 
 
@@ -161,7 +165,7 @@ FORCE_LIGHT_JS = """
 
 def build_demo():
     # 固定浅色主题：投影和截图都更清楚，也不受系统深色模式影响
-    with gr.Blocks(title="急诊分诊辅助（课程设计）", js=FORCE_LIGHT_JS) as demo:
+    with gr.Blocks(title="急诊分诊辅助（课程设计）") as demo:
         gr.Markdown(
             "## 急诊分诊辅助模型\n"
             "双塔融合（结构化生命体征 + 主诉文本）· CORAL 序数回归 · 输出 ESI 1-5 级及概率分布"
@@ -232,6 +236,8 @@ def main() -> None:
         # v6 起 theme 与 css 都在 launch() 传入，写在 Blocks 里会告警
         theme=gr.themes.Soft(primary_hue="blue", neutral_hue="slate"),
         inbrowser=args.open,
+        # v6 起 js 也归 launch()：加载时去掉 .dark 并持续监听，保证始终是浅色
+        js=FORCE_LIGHT_JS,
         # 关闭 SSR：v6 默认走 node 服务端渲染，无 node 环境时启动自检会失败
         ssr_mode=False,
     )
