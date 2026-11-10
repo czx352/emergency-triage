@@ -79,7 +79,7 @@ def _card(level: int, risk: str, suggestion: str, warn: str, version: str, laten
     color = LEVEL_COLORS[level]
     warn_html = f'<div class="warn">{warn}</div>' if warn else ""
     return f"""
-    <div class="card">
+    <div class="triage-card">
       <div class="badge" style="background:{color}">ESI {level}</div>
       <div class="meta">
         <div class="label">{ESI_LABELS[level]}</div>
@@ -95,7 +95,7 @@ def _card(level: int, risk: str, suggestion: str, warn: str, version: str, laten
 def triage(age, sex, arrival, complaint, hr, sbp, dbp, rr, temp_c, spo2, pain, gcs):
     state = get_state()
     if state["state"] is None:
-        return (f'<div class="card"><div class="label">模型未加载</div>'
+        return (f'<div class="triage-card"><div class="label">模型未加载</div>'
                 f'<div class="sub">{state["error"]}</div></div>'), _empty_figure("模型未加载")
 
     vitals = {"hr": hr, "sbp": sbp, "dbp": dbp, "rr": rr,
@@ -118,25 +118,50 @@ def triage(age, sex, arrival, complaint, hr, sbp, dbp, rr, temp_c, spo2, pain, g
 
 
 CSS = """
-.gradio-container {max-width: 1180px !important; background:#f4f6f9 !important;}
-body {background:#f4f6f9 !important;}
-.card {border:1px solid #e3e6ea; border-radius:12px; padding:18px 20px; background:#fff;}
-.badge {display:inline-block; color:#fff; font-size:26px; font-weight:700;
+body, .gradio-container {background:#f4f6f9 !important;}
+.gradio-container {max-width: 1180px !important;}
+
+/* 系统开深色模式时 Gradio 会把文字变量切成浅色，而卡片底色是固定白，
+   结果浅字压白底。这里强制一套浅色变量，卡片选择器再加 !important 兜底。 */
+.dark, .dark .gradio-container {
+  --body-text-color:#1b2631; --body-text-color-subdued:#5a6672;
+  --background-fill-primary:#ffffff; --background-fill-secondary:#f4f6f9;
+  --block-background-fill:#ffffff; --block-label-text-color:#1b2631;
+  --block-title-text-color:#1b2631; --border-color-primary:#e3e6ea;
+  --input-background-fill:#ffffff; --input-border-color:#cfd6dd;
+}
+.gradio-container h1, .gradio-container h2, .gradio-container h3,
+.gradio-container .prose p, .gradio-container label span {color:#1b2631 !important;}
+
+.triage-card {border:1px solid #e3e6ea; border-radius:12px; padding:18px 20px; background:#fff;}
+.triage-card .badge {display:inline-block; color:#fff !important; font-size:26px; font-weight:700;
         padding:10px 18px; border-radius:10px; margin-right:14px; vertical-align:middle;}
-.meta {display:inline-block; vertical-align:middle;}
-.label {font-size:19px; font-weight:600; color:#1b2631;}
-.sub {font-size:13px; color:#6b7683; margin-top:4px;}
-.suggest {margin-top:16px; font-size:15px; color:#212f3d; line-height:1.6;}
-.warn {margin-top:12px; padding:10px 12px; border-radius:8px;
-       background:#fdf2e9; color:#a04000; font-size:14px; border-left:4px solid #d35400;}
-.ver {margin-top:14px; font-size:12px; color:#98a2ad;}
-.note {font-size:12px; color:#7f8c8d; line-height:1.7;}
+.triage-card .meta {display:inline-block; vertical-align:middle;}
+.triage-card .label {font-size:19px; font-weight:600; color:#1b2631 !important;}
+.triage-card .sub {font-size:13px; color:#6b7683 !important; margin-top:4px;}
+.triage-card .suggest {margin-top:16px; font-size:15px; color:#212f3d !important; line-height:1.6;}
+.triage-card .warn {margin-top:12px; padding:10px 12px; border-radius:8px;
+       background:#fdf2e9; color:#a04000 !important; font-size:14px; border-left:4px solid #d35400;}
+.triage-card .ver {margin-top:14px; font-size:12px; color:#98a2ad !important;}
+.note {font-size:12px; color:#7f8c8d !important; line-height:1.7;}
+"""
+
+
+# 页面固定用浅色：投影与截图更清楚。Gradio 跟随系统深色模式给容器加 .dark 类，
+# 这里在加载时去掉，并持续监听，避免系统主题切换后又变深。
+FORCE_LIGHT_JS = """
+() => {
+  const strip = () => document.querySelectorAll('.dark').forEach((el) => el.classList.remove('dark'));
+  strip();
+  new MutationObserver(strip).observe(document.documentElement,
+    {attributes: true, subtree: true, attributeFilter: ['class']});
+}
 """
 
 
 def build_demo():
     # 固定浅色主题：投影和截图都更清楚，也不受系统深色模式影响
-    with gr.Blocks(title="急诊分诊辅助（课程设计）") as demo:
+    with gr.Blocks(title="急诊分诊辅助（课程设计）", js=FORCE_LIGHT_JS) as demo:
         gr.Markdown(
             "## 急诊分诊辅助模型\n"
             "双塔融合（结构化生命体征 + 主诉文本）· CORAL 序数回归 · 输出 ESI 1-5 级及概率分布"
