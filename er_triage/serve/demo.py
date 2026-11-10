@@ -211,6 +211,17 @@ def build_demo():
     return demo
 
 
+def _pick_port(preferred: int, span: int = 20) -> int:
+    """端口被占就往后顺延：答辩现场同时开着旧窗口时，不该直接崩掉。"""
+    import socket
+
+    for port in range(preferred, preferred + span):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            if sock.connect_ex(("127.0.0.1", port)) != 0:  # 连不上即视为空闲
+                return port
+    return preferred
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="急诊分诊演示页")
     parser.add_argument("--port", type=int, default=8091)
@@ -230,8 +241,12 @@ def main() -> None:
             no_proxy = f"{no_proxy},{host}" if no_proxy else host
     os.environ["NO_PROXY"] = os.environ["no_proxy"] = no_proxy
 
+    port = _pick_port(args.port)
+    if port != args.port:
+        print(f"端口 {args.port} 已被占用，改用 {port}")
+
     build_demo().launch(
-        server_name="127.0.0.1", server_port=args.port, share=args.share,
+        server_name="127.0.0.1", server_port=port, share=args.share,
         css=CSS, quiet=True,
         # v6 起 theme 与 css 都在 launch() 传入，写在 Blocks 里会告警
         theme=gr.themes.Soft(primary_hue="blue", neutral_hue="slate"),
