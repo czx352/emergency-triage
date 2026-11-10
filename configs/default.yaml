@@ -1,0 +1,49 @@
+# 急诊分诊分级（ESI 1-5）实验配置
+# 所有相对路径均相对于项目根目录
+seed: 42
+
+data:
+  processed_dir: data/processed
+  raw_dir: data/raw
+  # 训练入口读取的已处理数据（合成数据或 MIMIC-ED 产物）
+  train_file: data/processed/synthetic.csv
+  text_col: chief_complaint
+  target_col: esi
+  patient_col: subject_id
+  numeric_cols: [age, hr, sbp, dbp, rr, temp_c, spo2, pain, gcs]
+  val_ratio: 0.15
+  test_ratio: 0.15
+  n_folds: 5
+
+model:
+  text_backend: hash        # hash | hf
+  hf_model_name: emilyalsentzer/Bio_ClinicalBERT
+  text_max_len: 24
+  text_vocab_size: 32768
+  text_dim: 128
+  vitals_hidden: [128, 64]
+  fusion: gated             # gated | concat
+  head: coral               # coral | ce
+  dropout: 0.2
+
+train:
+  epochs: 8
+  batch_size: 64
+  lr: 0.0002
+  weight_decay: 0.01
+  device: auto              # auto | cpu | cuda
+  patience: 2
+  loss: coral               # coral | ce | cost_ce
+  # 代价矩阵：行=真实 ESI，列=预测 ESI。不对称：把危重判轻（行 1-2 → 列 4-5）代价最高，
+  # 把轻症判重代价较低但仍受惩罚，避免模型为求安全而全部报危重。
+  cost_matrix:
+    - [0, 2, 5, 8, 10]
+    - [3, 0, 2, 4, 6]
+    - [3, 2, 0, 1, 2]
+    - [3, 2, 1, 0, 1]
+    - [3, 2, 1, 1, 0]
+
+serve:
+  model_path: artifacts/best.pt
+  internal_token: CHANGE_ME
+  model_version: er-triage-0.1.0

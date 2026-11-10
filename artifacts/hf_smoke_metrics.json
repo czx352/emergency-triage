@@ -1,0 +1,55 @@
+{
+  "tag": "hf_smoke",
+  "model_version": "er-triage-0.1.0-hf_smoke",
+  "used_numeric_cols": [
+    "age",
+    "hr",
+    "sbp",
+    "dbp",
+    "rr",
+    "temp_c",
+    "spo2",
+    "pain",
+    "gcs"
+  ],
+  "test": {
+    "n": 89,
+    "macro_f1": 0.0,
+    "macro_f1_ci95": [
+      0.0,
+      0.0
+    ],
+    "qwk": -0.12100333728065449,
+    "qwk_ci95": [
+      -0.22990216761248541,
+      -0.04309599427677952
+    ],
+    "accuracy": 0.0,
+    "critical_under_triage": 0.5,
+    "under_triage": 0.14606741573033707,
+    "over_triage": 0.8539325842696629,
+    "cost_weighted_error": 3.9213483146067416
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.679508796105018,
+      "n": 91,
+      "macro_f1": 0.0,
+      "macro_f1_ci95": [
+        0.0,
+        0.0
+      ],
+      "qwk": -0.1846153846153844,
+      "qwk_ci95": [
+        -0.28672775366508757,
+        -0.07977782552315123
+      ],
+      "accuracy": 0.0,
+      "critical_under_triage": 0.7272727272727273,
+      "under_triage": 0.14285714285714285,
+      "over_triage": 0.8571428571428571,
+      "cost_weighted_error": 3.758241758241758
+    }
+  ]
+}

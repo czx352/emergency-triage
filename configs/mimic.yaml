@@ -1,0 +1,19 @@
+# MIMIC-IV-ED 正式实验配置：覆盖 default.yaml 的对应项
+data:
+  train_file: data/processed/mimic_ed.csv
+
+model:
+  # 真数据上必须用临床预训练语言模型；hash 后端只适合冒烟
+  text_backend: hf
+  hf_model_name: emilyalsentzer/Bio_ClinicalBERT
+  text_max_len: 128
+  text_vocab_size: 32768
+  text_dim: 256
+  dropout: 0.3
+
+train:
+  epochs: 5
+  batch_size: 32          # 8G 显存下 BERT-base 的安全值
+  lr: 0.00002
+  patience: 2
+  device: auto
