@@ -1,4 +1,4 @@
-"""接口契约（与 BFF 侧 /ai/emergency-triage 对齐）。"""
+"""接口契约：POST /ai/emergency-triage 的请求与响应结构。"""
 from __future__ import annotations
 
 from pydantic import BaseModel, Field

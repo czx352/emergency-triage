@@ -310,31 +310,28 @@ def build(out_path: Path, tag: str, artifacts: Path) -> None:
              "该矩阵直接参与损失计算与评估，不只是文档说明。",
              size=12, color=GREY, line_spacing=1.5)
 
-    slide = new_slide(prs, nxt(), "问题来源：一个宣称“AI 分诊”的开源医疗 OS", kicker="1.3 选题理由")
+    slide = new_slide(prs, nxt(), "问题来源：分诊依赖经验，缺少可量化基线", kicker="1.3 选题理由")
     bullets(slide, 0.85, 1.9, 6.3, 4.8, [
-        "目标仓库宣称具备急诊分诊 AI，接口与字段定义完整",
-        "核查发现接口返回的是硬编码常量，没有模型、没有推理",
-        "文档里的能力指标无法复现，属于“有契约、无实现”",
-        "本项目保留其接口契约，补上真实可训练的模型",
+        "分诊由护士在数分钟内完成，依据主诉、生命体征与意识状态",
+        "同一患者在不同护士、不同班次下可能出现等级差异",
+        "公开急诊数据受隐私协议约束，缺少可复现的参照基线",
+        "本项目把分诊建模为有序分级任务，并给出完整可复现实现",
     ], size=16)
-    code = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.35), Inches(1.95),
-                                  Inches(5.2), Inches(3.5))
-    code.fill.solid()
-    code.fill.fore_color.rgb = RGBColor(0x1E, 0x24, 0x2B)
-    code.line.fill.background()
-    code.shadow.inherit = False
-    text_box(slide, 7.6, 2.15, 4.7, 3.1,
-             '// 原仓库的实现（示意）\n'
-             'if (drugs.has("warfarin")) {\n'
-             '  return { level: "危重", risk: "高" };\n'
-             '}\n'
-             'return { level: "紧急", risk: "中" };\n\n'
-             '// 关键词命中即返回常量\n'
-             '// 无特征、无概率、无模型',
-             size=12, color=RGBColor(0xC8, 0xE6, 0xC9))
-    text_box(slide, 7.6, 5.6, 5.0, 0.6,
-             "本项目的做法：同样的接口，返回概率分布、模型版本与实测延迟。",
-             size=12, color=GREY)
+    box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.35), Inches(1.95),
+                                 Inches(5.2), Inches(3.3))
+    box.fill.solid()
+    box.fill.fore_color.rgb = WHITE
+    box.line.color.rgb = RGBColor(0xD5, 0xDB, 0xE2)
+    box.shadow.inherit = False
+    text_box(slide, 7.65, 2.12, 4.6, 0.45, "任务定义", size=13, bold=True, color=ACCENT)
+    bullets(slide, 7.65, 2.72, 4.55, 2.4, [
+        "输入：主诉文本 + 9 项生命体征 + 年龄",
+        "输出：ESI 1–5 概率分布与处置建议",
+        "约束：危重不可漏，降级代价最高",
+    ], size=13)
+    text_box(slide, 7.35, 5.5, 5.2, 0.9,
+             "判据在数据中有明确对应，\n适合用模型学习，而不是照搬经验规则。",
+             size=12, color=GREY, line_spacing=1.5)
 
     slide = new_slide(prs, nxt(), "本文工作与贡献", kicker="1.4 贡献")
     col_w = 3.7
@@ -704,16 +701,15 @@ def build(out_path: Path, tag: str, artifacts: Path) -> None:
     text_box(slide, 0.7, 6.45, 8.4, 0.4,
              "启动：py -m er_triage.serve.demo --port 8091", size=11, color=GREY)
 
-    slide = new_slide(prs, nxt(), "与原仓库的对比", kicker="4.4 交付差异")
+    slide = new_slide(prs, nxt(), "接口健壮性：异常路径", kicker="4.4 可用性验证")
     table(slide, 0.9, 1.95, 11.6,
-          [["维度", "原仓库", "本项目"],
-           ["分诊输出", "硬编码常量", "5 级概率分布 + 模型版本"],
-           ["模型", "无", "双塔融合 + CORAL，产物可复现"],
-           ["评估", "无", "QWK / 危重降级率 / bootstrap CI"],
-           ["数据", "未说明", "合成数据训练，开放 Demo 校验管线"],
-           ["接口", "有契约、无实现", "契约不变，实现可调用、有鉴权"],
-           ["可复现性", "不可复现", "脚本一键复现，指标自动汇总"]],
-          col_widths=[2.2, 4.0, 5.4], size=12, row_h=0.58, highlight_rows={1, 2, 3})
+          [["场景", "返回", "说明"],
+           ["正常调用", "200", "分级 + 5 类概率 + 建议 + 实测延迟"],
+           ["缺少 token", "401", "拒绝未授权调用，不返回任何预测"],
+           ["token 错误", "401", "不区分缺失与错误，避免信息泄漏"],
+           ["模型产物缺失", "503", "明确拒绝，不用常量兜底"],
+           ["端口已被占用", "自动顺延", "8091 → 8092，控制台打印实际地址"]],
+          col_widths=[2.6, 2.2, 6.8], size=12, row_h=0.6, highlight_rows={1})
 
     slide = new_slide(prs, nxt(), "局限与合规", kicker="4.5 诚实边界")
     bullets(slide, 0.85, 1.9, 11.5, 4.6, [
